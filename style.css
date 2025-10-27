@@ -1,0 +1,62 @@
+/* Genel Ayarlar ve Sıfırlamalar */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e9ebee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Ana Konteyner */
+.container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    width: 600px; /* Genişletildi, çünkü harcırah tablosu daha geniş olacak */
+    box-sizing: border-box;
+}
+
+/* Başlıklar ve Açıklamalar */
+h1 {
+    text-align: center;
+    color: #004d99; /* Mavi */
+    margin-bottom: 10px;
+    font-size: 1.8em;
+}
+
+h2 {
+    color: #333;
+    font-size: 1.4em;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.description {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 0.9em;
+}
+
+/* Giriş Grupları */
+.input-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+input[type="number"], 
+input[type="datetime-local"], 
+select {
+    width:
