@@ -1,30 +1,35 @@
-ddocument.addEventListener('DOMContentLoaded', () => {
-    // ********* GENEL AYARLAR VE SEKMELER *********
+document.addEventListener('DOMContentLoaded', () => {
+    // **********************************************
+    // ********* SEKMELER ARASI GEÇİŞ MANTIĞI *********
+    // **********************************************
     
-    // Sekme Elementleri
     const tabCalismaBtn = document.getElementById('tabCalismaBtn');
     const tabHaricrahBtn = document.getElementById('tabHaricrahBtn');
     const calismaGunTab = document.getElementById('calismaGunTab');
     const haricrahTab = document.getElementById('haricrahTab');
 
-    // Sekme Değiştirme Fonksiyonu
-    function changeTab(activeTab, inactiveTab, activeBtn, inactiveBtn) {
-        activeTab.classList.remove('hidden');
-        inactiveTab.classList.add('hidden');
-        activeBtn.classList.add('active');
-        inactiveBtn.classList.remove('active');
+    // **Güvenlik Kontrolü:** Sekme elementleri bulunamazsa, bu bölümü atla.
+    if (tabCalismaBtn && tabHaricrahBtn && calismaGunTab && haricrahTab) {
+        const changeTab = (activeTab, inactiveTab, activeBtn, inactiveBtn) => {
+            activeTab.classList.remove('hidden');
+            inactiveTab.classList.add('hidden');
+            activeBtn.classList.add('active');
+            inactiveBtn.classList.remove('active');
+        };
+
+        tabCalismaBtn.addEventListener('click', () => {
+            changeTab(calismaGunTab, haricrahTab, tabCalismaBtn, tabHaricrahBtn);
+        });
+
+        tabHaricrahBtn.addEventListener('click', () => {
+            changeTab(haricrahTab, calismaGunTab, tabHaricrahBtn, tabCalismaBtn);
+        });
     }
 
-    tabCalismaBtn.addEventListener('click', () => {
-        changeTab(calismaGunTab, haricrahTab, tabCalismaBtn, tabHaricrahBtn);
-    });
 
-    tabHaricrahBtn.addEventListener('click', () => {
-        changeTab(haricrahTab, calismaGunTab, tabHaricrahBtn, tabCalismaBtn);
-    });
-
-
+    // ***************************************************
     // ********* 1. BOŞ GÜN HESAPLAYICISI MANTIĞI *********
+    // ***************************************************
 
     const bosGunTablosu = { 
         31: 8, 30: 8, 29: 8, 28: 7, 27: 7, 26: 7, 25: 7, 
@@ -45,8 +50,11 @@ ddocument.addEventListener('DOMContentLoaded', () => {
     const izinGunInput = document.getElementById('izinGunSayisi');
     const hesaplaBtn = document.getElementById('hesaplaBtn');
     const sonucDiv = document.getElementById('sonuc');
-
-    hesaplaBtn.addEventListener('click', hesaplaBoşGün);
+    
+    // **Güvenlik Kontrolü:** Elementler varsa addEventListener ekle
+    if (hesaplaBtn) {
+        hesaplaBtn.addEventListener('click', hesaplaBoşGün);
+    }
 
     function hesaplaBoşGün() {
         const ayAdi = aySecimiSelect.value;
@@ -59,7 +67,10 @@ ddocument.addEventListener('DOMContentLoaded', () => {
         }
 
         const ayGunSayisi = ayGunleri[ayAdi];
+        
+        
         let fiiliCalismaGunu = ayGunSayisi - izinGunSayisi;
+        
         
         if (fiiliCalismaGunu > 31) {
             fiiliCalismaGunu = 31;
@@ -70,7 +81,7 @@ ddocument.addEventListener('DOMContentLoaded', () => {
         const hakEdilenBosGun = bosGunTablosu[fiiliCalismaGunu];
         
         if (hakEdilenBosGun === undefined) {
-            sonucDiv.innerHTML = "Hata: Hesaplama aralığı dışında bir çalışma günü oluştu.";
+            sonucDiv.innerHTML = "Hata: Hesaplama aralığı dışında bir fiili çalışma günü oluştu.";
             sonucDiv.className = 'sonuc-kutusu error';
             return;
         }
@@ -95,13 +106,18 @@ ddocument.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // ***************************************************
     // ********* 2. HARCIRAH PLANLAYICISI MANTIĞI *********
+    // ***************************************************
 
     const motorKapamaZamaniInput = document.getElementById('motorKapamaZamani');
     const planlaHaricrahBtn = document.getElementById('planlaHaricrahBtn');
     const haricrahSonucDiv = document.getElementById('haricrahSonuc');
 
-    planlaHaricrahBtn.addEventListener('click', planlaHaricrah);
+    // **Güvenlik Kontrolü:** Elementler varsa addEventListener ekle
+    if (planlaHaricrahBtn) {
+        planlaHaricrahBtn.addEventListener('click', planlaHaricrah);
+    }
 
     function planlaHaricrah() {
         const motorKapamaZamaniStr = motorKapamaZamaniInput.value;
@@ -111,19 +127,18 @@ ddocument.addEventListener('DOMContentLoaded', () => {
             haricrahSonucDiv.className = 'sonuc-kutusu error';
             return;
         }
-
-        // motorKapamaZamaniStr formatı 'YYYY-MM-DDTHH:MM' şeklindedir.
-        // Z/UTC formatında
-        const motorKapamaDate = new Date(motorKapamaZamaniStr + ':00Z');
-
-        if (isNaN(motorKapamaDate.getTime())) {
-            haricrahSonucDiv.innerHTML = "Geçersiz tarih veya saat formatı.";
-            haricrahSonucDiv.className = 'sonuc-kutusu error';
-            return;
-        }
-
-        // 1. Başlangıç Süresini (BS) Hesaplama: Motor Kapama + 30 Dakika
-        let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); 
+        
+        const motorKapamaDate = new Date(motorKapamaZamaniStr);
+        
+        // Girdiği YYYY/MM/DD HH:MM değerlerini kullanarak UTC milisaniye oluşturma:
+        const year = motorKapamaDate.getFullYear();
+        const month = motorKapamaDate.getMonth();
+        const day = motorKapamaDate.getDate();
+        const hours = motorKapamaDate.getHours();
+        const minutes = motorKapamaDate.getMinutes();
+        
+        // Date.UTC() ile kullanıcının girdiği yerel değerleri UTC saat olarak kabul et
+        let baslangicSuresiMs = Date.UTC(year, month, day, hours, minutes) + (30 * 60 * 1000); // 30 dakika ekle
 
         let tabloHTML = `
             <h2>Minimum Harcırah Hak Ediş Saatleri</h2>
@@ -134,20 +149,13 @@ ddocument.addEventListener('DOMContentLoaded', () => {
                 </tr>
         `;
 
-        // 2. 1 Harcırahtan 5 Harcıraha Kadar Hesaplama
         for (let N = 1; N <= 5; N++) {
-            // N harcırahı hak etmek için gereken minimum geçen süre: (N-1) * 24 saat + 1 dakika
             const minGecenSureMs = ((N - 1) * 24 * 60 * 60 * 1000) + (1 * 60 * 1000);
-
-            // Minimum Bitiş Süresi (BTS) = Başlangıç Süresi + Min Geçen Süre
             const minBitisSuresiMs = baslangicSuresiMs + minGecenSureMs;
-
-            // Minimum Pushback Zamanı = BTS + 1 Saat
-            const minPushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000);
+            const minPushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000); // + 1 Saat
 
             const pushbackDate = new Date(minPushbackMs);
 
-            // Tarih formatını daha okunaklı hale getirme
             const tarihSecenekleri = { 
                 year: 'numeric', month: 'short', day: 'numeric', 
                 hour: '2-digit', minute: '2-digit', 
