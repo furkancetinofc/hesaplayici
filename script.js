@@ -1,14 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     // **********************************************
-    // ********* SEKMELER ARASI GEÇİŞ MANTIĞI *********
+    // ********* GENEL AYARLAR VE SEKMELER *********
     // **********************************************
     
+    // Sekme Elementleri
     const tabCalismaBtn = document.getElementById('tabCalismaBtn');
     const tabHaricrahBtn = document.getElementById('tabHaricrahBtn');
     const calismaGunTab = document.getElementById('calismaGunTab');
     const haricrahTab = document.getElementById('haricrahTab');
 
-    // Güvenlik Kontrolü: Sekme elementleri bulunamazsa, bu bölümü atla.
+    
     if (tabCalismaBtn && tabHaricrahBtn && calismaGunTab && haricrahTab) {
         const changeTab = (activeTab, inactiveTab, activeBtn, inactiveBtn) => {
             activeTab.classList.remove('hidden');
@@ -31,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ********* 1. BOŞ GÜN HESAPLAYICISI MANTIĞI *********
     // ***************************************************
 
-    // Tablo ve Ay Tanımlamaları
     const bosGunTablosu = { 
         31: 8, 30: 8, 29: 8, 28: 7, 27: 7, 26: 7, 25: 7, 
         24: 6, 23: 6, 22: 6, 21: 6, 20: 5, 19: 5, 
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hesaplaBtn = document.getElementById('hesaplaBtn');
     const sonucDiv = document.getElementById('sonuc');
     
-    // Güvenlik Kontrolü: Buton varsa dinleyiciyi ekle
+    
     if (hesaplaBtn) {
         hesaplaBtn.addEventListener('click', hesaplaBoşGün);
     }
@@ -119,13 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const planlaHaricrahBtn = document.getElementById('planlaHaricrahBtn');
     const haricrahSonucDiv = document.getElementById('haricrahSonuc');
 
-    // Güvenlik Kontrolü: Buton varsa dinleyiciyi ekle
+    
     if (planlaHaricrahBtn) {
         planlaHaricrahBtn.addEventListener('click', planlaHaricrah);
     }
 
     function planlaHaricrah() {
-        // Eksik element kontrolü
+        
         if (!motorKapamaZamaniInput || !haricrahSonucDiv) return;
 
         const motorKapamaZamaniStr = motorKapamaZamaniInput.value;
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const motorKapamaDate = new Date(motorKapamaZamaniStr);
         
-        // KONTROL DÜZELTMESİ: Kullanıcının girdiği yerel değerleri UTC olarak kabul et
+        // Kullanıcının girdiği yerel değerleri UTC olarak kabul et (Saat Dilimi Nötralizasyonu)
         const year = motorKapamaDate.getFullYear();
         const month = motorKapamaDate.getMonth();
         const day = motorKapamaDate.getDate();
@@ -153,24 +153,41 @@ document.addEventListener('DOMContentLoaded', () => {
             <table style="width:100%; border-collapse: collapse; text-align: center; margin-top: 10px;">
                 <tr>
                     <th style="border-bottom: 2px solid #004d99; padding: 8px;">Harcırah</th>
-                    <th style="border-bottom: 2px solid #004d99; padding: 8px;">Minimum Pushback Zamanı (UTC)</th>
+                    <th style="border-bottom: 2px solid #004d99; padding: 8px;">Pushback Eşiği (UTC)</th>
                 </tr>
         `;
 
-        // 2. 1 Harcırahtan 5 Harcıraha Kadar Hesaplama
+        // 2. 1 Harcırahtan 5 Harcıraha Kadar Hesaplama 
         for (let N = 1; N <= 5; N++) {
-            
-            // TS = (N-1) tam gün + 1 dakika
-            const gunMs = (N - 1) * 24 * 60 * 60 * 1000;
-            const birDakikaMs = 1 * 60 * 1000;
-            
-            // Minimum Bitiş Süresi (BTS) = BS + TS
-            const minBitisSuresiMs = baslangicSuresiMs + gunMs + birDakikaMs;
-            
-            // Minimum Pushback Zamanı (PBZ) = Min BTS + 1 Saat
-            const minPushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000);
+            let pushbackMs;
+            let zamanAciklamasi;
 
-            const pushbackDate = new Date(minPushbackMs);
+            if (N === 1) {
+                // 1 Harcırah: 24 saat 00 dakikayı DAHİL EDEN bitiş anı (ve öncesi)
+                const yirmiDortSaatMs = 24 * 60 * 60 * 1000;
+                
+                // Bitiş Süresi (BTS) = BS + 24 saat
+                const bitisSuresiMs = baslangicSuresiMs + yirmiDortSaatMs;
+                
+                // Pushback Zamanı (PBZ) = BTS + 1 Saat (24 saat sonunda)
+                pushbackMs = bitisSuresiMs + (1 * 60 * 60 * 1000);
+                zamanAciklamasi = "ve öncesi";
+
+            } else {
+                // N Harcırah: (N-1) tam gün + 1 dakika EŞİĞİNİ GEÇEN BAŞLANGIÇ ANLARI (ve sonrası)
+                // Gereken Süre: (N-1) tam gün + 1 dakika
+                const gunMs = (N - 1) * 24 * 60 * 60 * 1000;
+                const birDakikaMs = 1 * 60 * 1000;
+
+                // Minimum Bitiş Süresi (BTS) = BS + (N-1) tam gün + 1 dakika
+                const minBitisSuresiMs = baslangicSuresiMs + gunMs + birDakikaMs;
+                
+                // Minimum Pushback Zamanı (PBZ) = Min BTS + 1 Saat
+                pushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000);
+                zamanAciklamasi = "ve sonrası";
+            }
+
+            const pushbackDate = new Date(pushbackMs);
 
             // Tarih formatlama (UTC olarak)
             const tarihSecenekleri = { 
@@ -178,12 +195,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 hour: '2-digit', minute: '2-digit', 
                 hourCycle: 'h23', timeZone: 'UTC' 
             };
-            const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri) + ' UTC';
+            const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri);
 
             tabloHTML += `
                 <tr>
                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${N} Harcırah</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px; font-weight: bold;">${pushbackZamaniStr}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px; font-weight: bold;">
+                        ${pushbackZamaniStr} UTC ${zamanAciklamasi}
+                    </td>
                 </tr>
             `;
         }
