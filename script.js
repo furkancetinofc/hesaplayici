@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+ddocument.addEventListener('DOMContentLoaded', () => {
     // ********* GENEL AYARLAR VE SEKMELER *********
     
     // Sekme Elementleri
@@ -26,9 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ********* 1. BOŞ GÜN HESAPLAYICISI MANTIĞI *********
 
-    const bosGunTablosu = { /* ... (Önceki Cevaptaki Tablo) ... */
-        31: 8,  
-        30: 8, 29: 8, 28: 7, 27: 7, 26: 7, 25: 7, 
+    const bosGunTablosu = { 
+        31: 8, 30: 8, 29: 8, 28: 7, 27: 7, 26: 7, 25: 7, 
         24: 6, 23: 6, 22: 6, 21: 6, 20: 5, 19: 5, 
         18: 5, 17: 5, 16: 4, 15: 4, 14: 4, 13: 3, 
         12: 3, 11: 3, 10: 3, 9: 2, 8: 2, 7: 2, 
@@ -50,11 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
     hesaplaBtn.addEventListener('click', hesaplaBoşGün);
 
     function hesaplaBoşGün() {
-        // ... (Önceki cevaptaki hesaplaBoşGün fonksiyonunun TAMAMI buraya gelecek) ...
         const ayAdi = aySecimiSelect.value;
         const izinGunSayisi = parseInt(izinGunInput.value);
 
-        // Geçerlilik Kontrolü
         if (!ayAdi || isNaN(izinGunSayisi) || izinGunSayisi < 0) {
             sonucDiv.innerHTML = "Lütfen geçerli bir ay seçin ve izin gün sayısını girin.";
             sonucDiv.className = 'sonuc-kutusu error';
@@ -62,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const ayGunSayisi = ayGunleri[ayAdi];
-
         let fiiliCalismaGunu = ayGunSayisi - izinGunSayisi;
         
         if (fiiliCalismaGunu > 31) {
@@ -74,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hakEdilenBosGun = bosGunTablosu[fiiliCalismaGunu];
         
         if (hakEdilenBosGun === undefined) {
-            sonucDiv.innerHTML = "Hata: Hesaplama aralığı dışında bir fiili çalışma günü oluştu.";
+            sonucDiv.innerHTML = "Hata: Hesaplama aralığı dışında bir çalışma günü oluştu.";
             sonucDiv.className = 'sonuc-kutusu error';
             return;
         }
@@ -117,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // motorKapamaZamaniStr formatı 'YYYY-MM-DDTHH:MM' şeklindedir.
-        // Bunu Date objesine çeviriyoruz. 'Z' ekleyerek UTC olduğunu varsayıyoruz.
+        // Z/UTC formatında
         const motorKapamaDate = new Date(motorKapamaZamaniStr + ':00Z');
 
         if (isNaN(motorKapamaDate.getTime())) {
@@ -127,8 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 1. Başlangıç Süresini (BS) Hesaplama: Motor Kapama + 30 Dakika
-        // getTime() milisaniye cinsinden zamanı verir.
-        let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); // 30 dakika ekle
+        let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); 
 
         let tabloHTML = `
             <h2>Minimum Harcırah Hak Ediş Saatleri</h2>
@@ -141,18 +136,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. 1 Harcırahtan 5 Harcıraha Kadar Hesaplama
         for (let N = 1; N <= 5; N++) {
-            // N harcırahı hak etmek için gereken minimum geçen süre (N-1) * 24 saat + 1 dakika
+            // N harcırahı hak etmek için gereken minimum geçen süre: (N-1) * 24 saat + 1 dakika
             const minGecenSureMs = ((N - 1) * 24 * 60 * 60 * 1000) + (1 * 60 * 1000);
 
-            // Minimum Bitiş Süresi (BTS)
+            // Minimum Bitiş Süresi (BTS) = Başlangıç Süresi + Min Geçen Süre
             const minBitisSuresiMs = baslangicSuresiMs + minGecenSureMs;
 
-            // Minimum Pushback Zamanı: BTS + 1 Saat
+            // Minimum Pushback Zamanı = BTS + 1 Saat
             const minPushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000);
 
             const pushbackDate = new Date(minPushbackMs);
 
-            // Tarih formatını daha okunaklı hale getirme (Örn: 05 Kas 10:31)
+            // Tarih formatını daha okunaklı hale getirme
             const tarihSecenekleri = { 
                 year: 'numeric', month: 'short', day: 'numeric', 
                 hour: '2-digit', minute: '2-digit', 
