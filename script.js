@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const calismaGunTab = document.getElementById('calismaGunTab');
     const haricrahTab = document.getElementById('haricrahTab');
 
-    // **Güvenlik Kontrolü:** Sekme elementleri bulunamazsa, bu bölümü atla.
+    // Güvenlik Kontrolü: Sekme elementleri bulunamazsa, bu bölümü atla.
     if (tabCalismaBtn && tabHaricrahBtn && calismaGunTab && haricrahTab) {
         const changeTab = (activeTab, inactiveTab, activeBtn, inactiveBtn) => {
             activeTab.classList.remove('hidden');
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ********* 1. BOŞ GÜN HESAPLAYICISI MANTIĞI *********
     // ***************************************************
 
+    // Tablo ve Ay Tanımlamaları
     const bosGunTablosu = { 
         31: 8, 30: 8, 29: 8, 28: 7, 27: 7, 26: 7, 25: 7, 
         24: 6, 23: 6, 22: 6, 21: 6, 20: 5, 19: 5, 
@@ -44,19 +45,23 @@ document.addEventListener('DOMContentLoaded', () => {
         Temmuz: 31, Agustos: 31, Eylul: 30, Ekim: 31, Kasim: 30, Aralik: 31
     };
     
-    const standartBosGun = bosGunTablosu[30]; // 8 gün
+    const standartBosGun = bosGunTablosu[30]; 
 
+    // Elementler
     const aySecimiSelect = document.getElementById('aySecimi');
     const izinGunInput = document.getElementById('izinGunSayisi');
     const hesaplaBtn = document.getElementById('hesaplaBtn');
     const sonucDiv = document.getElementById('sonuc');
     
-    // **Güvenlik Kontrolü:** Elementler varsa addEventListener ekle
+    // Güvenlik Kontrolü: Buton varsa dinleyiciyi ekle
     if (hesaplaBtn) {
         hesaplaBtn.addEventListener('click', hesaplaBoşGün);
     }
 
     function hesaplaBoşGün() {
+        // Eksik element kontrolü
+        if (!aySecimiSelect || !izinGunInput || !sonucDiv) return;
+
         const ayAdi = aySecimiSelect.value;
         const izinGunSayisi = parseInt(izinGunInput.value);
 
@@ -68,10 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const ayGunSayisi = ayGunleri[ayAdi];
         
-        
         let fiiliCalismaGunu = ayGunSayisi - izinGunSayisi;
         
-        
+        // Tablo Sınır Kontrolleri
         if (fiiliCalismaGunu > 31) {
             fiiliCalismaGunu = 31;
         } else if (fiiliCalismaGunu < 1) {
@@ -88,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dusenBosGunSayisi = standartBosGun - hakEdilenBosGun;
         
+        // Sonuç Çıktısı
         sonucDiv.innerHTML = `
             <p>Seçilen Ay: <strong>${ayAdi} (${ayGunSayisi} gün)</strong></p>
             <p>Toplam İzin: <strong>${izinGunSayisi} Gün</strong></p>
@@ -114,12 +119,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const planlaHaricrahBtn = document.getElementById('planlaHaricrahBtn');
     const haricrahSonucDiv = document.getElementById('haricrahSonuc');
 
-    // **Güvenlik Kontrolü:** Elementler varsa addEventListener ekle
+    // Güvenlik Kontrolü: Buton varsa dinleyiciyi ekle
     if (planlaHaricrahBtn) {
         planlaHaricrahBtn.addEventListener('click', planlaHaricrah);
     }
 
     function planlaHaricrah() {
+        // Eksik element kontrolü
+        if (!motorKapamaZamaniInput || !haricrahSonucDiv) return;
+
         const motorKapamaZamaniStr = motorKapamaZamaniInput.value;
 
         if (!motorKapamaZamaniStr) {
@@ -130,15 +138,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const motorKapamaDate = new Date(motorKapamaZamaniStr);
         
-        // Girdiği YYYY/MM/DD HH:MM değerlerini kullanarak UTC milisaniye oluşturma:
+        // KONTROL DÜZELTMESİ: Kullanıcının girdiği yerel değerleri UTC olarak kabul et
         const year = motorKapamaDate.getFullYear();
         const month = motorKapamaDate.getMonth();
         const day = motorKapamaDate.getDate();
         const hours = motorKapamaDate.getHours();
         const minutes = motorKapamaDate.getMinutes();
         
-        // Date.UTC() ile kullanıcının girdiği yerel değerleri UTC saat olarak kabul et
-        let baslangicSuresiMs = Date.UTC(year, month, day, hours, minutes) + (30 * 60 * 1000); // 30 dakika ekle
+        // Başlangıç Süresi (BS) milisaniye cinsinden UTC: MKZ + 30 dakika
+        let baslangicSuresiMs = Date.UTC(year, month, day, hours, minutes) + (30 * 60 * 1000); 
 
         let tabloHTML = `
             <h2>Minimum Harcırah Hak Ediş Saatleri</h2>
@@ -149,13 +157,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
         `;
 
+        // 2. 1 Harcırahtan 5 Harcıraha Kadar Hesaplama
         for (let N = 1; N <= 5; N++) {
-            const minGecenSureMs = ((N - 1) * 24 * 60 * 60 * 1000) + (1 * 60 * 1000);
-            const minBitisSuresiMs = baslangicSuresiMs + minGecenSureMs;
-            const minPushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000); // + 1 Saat
+            
+            // TS = (N-1) tam gün + 1 dakika
+            const gunMs = (N - 1) * 24 * 60 * 60 * 1000;
+            const birDakikaMs = 1 * 60 * 1000;
+            
+            // Minimum Bitiş Süresi (BTS) = BS + TS
+            const minBitisSuresiMs = baslangicSuresiMs + gunMs + birDakikaMs;
+            
+            // Minimum Pushback Zamanı (PBZ) = Min BTS + 1 Saat
+            const minPushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000);
 
             const pushbackDate = new Date(minPushbackMs);
 
+            // Tarih formatlama (UTC olarak)
             const tarihSecenekleri = { 
                 year: 'numeric', month: 'short', day: 'numeric', 
                 hour: '2-digit', minute: '2-digit', 
