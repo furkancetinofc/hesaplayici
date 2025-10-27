@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uçucu Ekip Hesaplayıcıları</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Sadece yeni sekmeler için gerekli minimal CSS, detaylar style.css'te */
+        .tab-container {
+            width: 800px;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab-buttons button {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border-bottom: 3px solid transparent;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        .tab-buttons button.active {
+            background-color: #ffffff;
+            border-bottom: 3px solid #004d99;
+            font-weight: bold;
+        }
+        .tab-content {
+            padding: 20px 0;
+            border-top: 1px solid #ddd;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container tab-container">
+        
+        <div class="tab-buttons">
+            <button id="tabCalismaBtn" class="active">Boş Gün Hesaplayıcı</button>
+            <button id="tabHaricrahBtn">Harcırah Planlayıcı</button>
+        </div>
+
+        <div id="calismaGunTab" class="tab-content">
+            <h1>Uçucu Ekip Boş Gün Hesaplayıcı</h1>
+            <p class="description">Ay seçiminize ve rapor/mazeret izinlerinize göre hak ettiğiniz "Kullanılabilecek Boş Gün" sayısını hesaplar.</p>
+
+            <div class="input-group">
+                <label for="aySecimi">Hesaplama Yapılacak Ayı Seçiniz:</label>
+                </div>
+            <div class="input-group">
+                <label for="izinGunSayisi">Ay İçinde Alınan Toplam Rapor/Mazeret İzni (Gün):</label>
+                <input type="number" id="izinGunSayisi" placeholder="Örn: 2" min="0" required>
+            </div>
+            <button id="hesaplaBtn">Boş Gün Hakkını Hesapla</button>
+            <div id="sonuc" class="sonuc-kutusu"></div>
+            <p class="not">
+                *Hesaplama, THY A.O. Uçucu Ekipler Takvim Ayında Çalışılan Gün ve Kullanılabilecek Boş Gün Oran Tablosu (EK-5) baz alınarak yapılmıştır.
+            </p>
+        </div>
+
+        <div id="haricrahTab" class="tab-content hidden">
+            <h1>Harcırah Planlayıcı</h1>
+            <p class="description">Motor kapama saatinize göre, kaç harcırah alacağınızı garantileyecek minimum dönüş (Pushback) saatlerini planlayın.</p>
+
+            <div class="input-group">
+                <label for="motorKapamaZamani">Motor Kapama Zamanı (UTC Tarih ve Saat):</label>
+                <input type="datetime-local" id="motorKapamaZamani" required>
+            </div>
+            
+            <button id="planlaHaricrahBtn" style="background-color: #004d99;">Harcırah Planını Göster</button>
+
+            <div id="haricrahSonuc" class="sonuc-kutusu" style="text-align: left; background-color: #f7f7ff; color: #333; border: 1px solid #004d99;">
+                Lütfen Motor Kapama Zamanını giriniz.
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
