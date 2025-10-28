@@ -297,7 +297,7 @@ function planlaHaricrah() {
 
     if (!motorKapamaZamaniInput || !haricrahSonucDiv) return;
 
-    const motorKapamaZamaniStr = motorKapamaZamaniInput.value;
+    const motorKapamaZamaniStr = motorKapamaZamaniInput.value.trim();
 
     if (!motorKapamaZamaniStr) {
         haricrahSonucDiv.innerHTML = "Lütfen Motor Kapama Zamanını (UTC) giriniz.";
@@ -305,10 +305,27 @@ function planlaHaricrah() {
         return;
     }
     
-    const motorKapamaDate = new Date(motorKapamaZamaniStr);
+const [tarihKismi, saatKismi] = motorKapamaZamaniStr.split(' ');
+    let motorKapamaDate;
+
+    try {
+        const [gun, ay, yil] = tarihKismi.split('.');
+        
+        motorKapamaDate = new Date(`${yil}-${ay}-${gun}T${saatKismi}:00Z`);
+
+        if (isNaN(motorKapamaDate.getTime())) {
+            throw new Error("Tarih nesnesi geçersiz.");
+        }
+    } catch (e) {
+        motorKapamaDate = new Date(motorKapamaZamaniStr);
+        if (isNaN(motorKapamaDate.getTime())) {
+             haricrahSonucDiv.innerHTML = "Hata: Tarih formatı okunamadı. Lütfen **GG.AA.YYYY SS:DD** formatını kontrol edin.";
+             haricrahSonucDiv.className = 'sonuc-kutusu error';
+             return;
+        }
+    }
     
-    // Motor Kapamadan 30 dakika sonrası başlangıç alınır
-    let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); 
+let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); 
 
     let tabloHTML = `
         <h2>Minimum Harcırah Hak Ediş Saatleri</h2>
@@ -318,37 +335,13 @@ function planlaHaricrah() {
                 <th style="border-bottom: 2px solid #004d99; padding: 8px;">Pushback Eşiği (UTC)</th>
             </tr>
     `;
-
-    for (let N = 1; N <= 5; N++) {
-        let pushbackMs;
-        let zamanAciklamasi;
-
-        if (N === 1) {
-            // 1. Harcırah: Başlangıç + 24 Saat + 1 Saat (Pushback)
-            const yirmiDortSaatMs = 24 * 60 * 60 * 1000;
-            const birSaatMs = 1 * 60 * 60 * 1000;
-            pushbackMs = baslangicSuresiMs + yirmiDortSaatMs + birSaatMs;
-            zamanAciklamasi = "ve öncesi";
-
-        } else {
-            // N. Harcırah: Başlangıç + ((N-1) * 24 Saat) + 1 Dakika + 1 Saat (Pushback)
-            const gunMs = (N - 1) * 24 * 60 * 60 * 1000;
-            const birDakikaMs = 1 * 60 * 1000;
-            const birSaatMs = 1 * 60 * 60 * 1000;
-
-            const minBitisSuresiMs = baslangicSuresiMs + gunMs + birDakikaMs;
-            pushbackMs = minBitisSuresiMs + birSaatMs;
-            zamanAciklamasi = "ve sonrası";
-        }
-
-        const pushbackDate = new Date(pushbackMs);
-
-        const tarihSecenekleri = { 
-            year: 'numeric', month: 'short', day: 'numeric', 
-            hour: '2-digit', minute: '2-digit', 
-            hourCycle: 'h23', timeZone: 'UTC' 
-        };
-        const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri);
+    
+    const tarihSecenekleri = { 
+        year: 'numeric', month: 'short', day: 'numeric', 
+        hour: '2-digit', minute: '2-digit', 
+        hourCycle: 'h23', timeZone: 'UTC' 
+    };
+    const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri);
 
         tabloHTML += `
             <tr>
