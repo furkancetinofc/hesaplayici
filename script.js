@@ -305,27 +305,26 @@ function planlaHaricrah() {
         return;
     }
     
-const [tarihKismi, saatKismi] = motorKapamaZamaniStr.split(' ');
     let motorKapamaDate;
-
     try {
+        const [tarihKismi, saatKismi] = motorKapamaZamaniStr.split(' ');
         const [gun, ay, yil] = tarihKismi.split('.');
+        const [saat, dakika] = saatKismi.split(':');
         
-        motorKapamaDate = new Date(`${yil}-${ay}-${gun}T${saatKismi}:00Z`);
-
+        const msTimestamp = Date.UTC(yil, ay - 1, gun, saat, dakika);
+        motorKapamaDate = new Date(msTimestamp);
+        
         if (isNaN(motorKapamaDate.getTime())) {
-            throw new Error("Tarih nesnesi geçersiz.");
+            throw new Error("Geçersiz Tarih Oluşumu.");
         }
     } catch (e) {
-        motorKapamaDate = new Date(motorKapamaZamaniStr);
-        if (isNaN(motorKapamaDate.getTime())) {
-             haricrahSonucDiv.innerHTML = "Hata: Tarih formatı okunamadı. Lütfen **GG.AA.YYYY SS:DD** formatını kontrol edin.";
-             haricrahSonucDiv.className = 'sonuc-kutusu error';
-             return;
-        }
+        haricrahSonucDiv.innerHTML = "Hata: Tarih formatı okunamadı. Lütfen **GG.AA.YYYY SS:DD** formatını kontrol edin.";
+        haricrahSonucDiv.className = 'sonuc-kutusu error';
+        return;
     }
     
-let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); 
+    // Motor Kapamadan 30 dakika sonrası başlangıç alınır
+    let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); 
 
     let tabloHTML = `
         <h2>Minimum Harcırah Hak Ediş Saatleri</h2>
@@ -335,13 +334,34 @@ let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000);
                 <th style="border-bottom: 2px solid #004d99; padding: 8px;">Pushback Eşiği (UTC)</th>
             </tr>
     `;
-    
-    const tarihSecenekleri = { 
-        year: 'numeric', month: 'short', day: 'numeric', 
-        hour: '2-digit', minute: '2-digit', 
-        hourCycle: 'h23', timeZone: 'UTC' 
-    };
-    const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri);
+
+    for (let N = 1; N <= 5; N++) {
+        let pushbackMs;
+        let zamanAciklamasi;
+
+        if (N === 1) {
+            const yirmiDortSaatMs = 24 * 60 * 60 * 1000;
+            const birSaatMs = 1 * 60 * 60 * 1000;
+            pushbackMs = baslangicSuresiMs + yirmiDortSaatMs + birSaatMs;
+            zamanAciklamasi = "ve öncesi";
+
+        } else {
+            const gunMs = (N - 1) * 24 * 60 * 60 * 1000;
+            const birDakikaMs = 1 * 60 * 1000;
+            const birSaatMs = 1 * 60 * 60 * 1000;
+            const minBitisSuresiMs = baslangicSuresiMs + gunMs + birDakikaMs;
+            pushbackMs = minBitisSuresiMs + birSaatMs;
+            zamanAciklamasi = "ve sonrası";
+        }
+
+        const pushbackDate = new Date(pushbackMs);
+
+        const tarihSecenekleri = { 
+            year: 'numeric', month: 'short', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit', 
+            hourCycle: 'h23', timeZone: 'UTC' 
+        };
+        const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri);
 
         tabloHTML += `
             <tr>
@@ -357,98 +377,6 @@ let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000);
     haricrahSonucDiv.innerHTML = tabloHTML;
     haricrahSonucDiv.classList.remove('error');
 }
-
-
-// --- 3.3. HARCIRAH DEĞER HESAPLAYICISI MANTIĞI ---
-function hesaplaHaricrahDeger() {
-    const degerSonucDiv = document.getElementById('degerSonuc');
-    if (!degerSonucDiv) return;
-
-    const girisSatirlari = document.querySelectorAll('.dinamik-giris-satiri');
-    let toplamTL = 0;
-    let detayHTML = '';
-    let hataVar = false;
-
-    girisSatirlari.forEach((satir) => {
-        const ulkeSelect = satir.querySelector('.ulke-secimi');
-        const sayiInput = satir.querySelector('.harcirah-sayisi');
-
-        const secilenUlke = ulkeSelect ? ulkeSelect.value : null;
-        const harcirahSayisi = sayiInput ? parseInt(sayiInput.value) : 0;
-
-        if (!secilenUlke || isNaN(harcirahSayisi) || harcirahSayisi < 1) {
-            hataVar = true;
-            return;  
-        }
-        
-        const veri = harcirahVerileri[secilenUlke];
-        const tekilDeger = veri.deger;
-        const paraBirimi = veri.birim;
-        const dovizAdi = veri.dovizAdi;
-        
-        let kur = kurVerileri[paraBirimi];  
-        if (!kur || kur === 0) {
-            kur = kurVerileri[`DEFAULT_${paraBirimi}`] || 1;
-        }
-        
-        const totalOriginalTutar = tekilDeger * harcirahSayisi;
-        const tlKarsiligi = totalOriginalTutar * kur;
-        toplamTL += tlKarsiligi;
-
-        const kurBilgisiStr = kur.toFixed(4).replace('.', ',');  
-        const tlKarsiligiStr = tlKarsiligi.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const tekilDegerStr = tekilDeger.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const totalOriginalTutarStr = totalOriginalTutar.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        detayHTML += `
-            <div class="detay-hesaplama-kutusu">
-                <h4 style="color: #004d99; margin-top: 0; font-size: 1.2em;">${secilenUlke} İçin ${harcirahSayisi} Harcırah Değeri</h4>
-                <p style="font-size: 1.1em; margin-bottom: 5px; color:#333;">
-                    Orijinal Tutar:  
-                    <strong>${totalOriginalTutarStr} ${dovizAdi}</strong>  
-                    <span style="font-size:0.8em; color:#666;">(${tekilDegerStr}${dovizAdi} x ${harcirahSayisi})</span>
-                </p>
-                <p style="font-size: 1.1em; color: #333; margin-top: 0; margin-bottom: 10px;">
-                    Güncel Kur (${paraBirimi}/TL):  
-                    1 ${paraBirimi} = <strong>${kurBilgisiStr} TL</strong>
-                </p>
-                <hr style="border-top: 1px solid #ddd; width: 70%; margin: 10px auto;">
-                <p class="toplam-tl">
-                    Toplam TL Karşılığı:  
-                    ${tlKarsiligiStr} TL
-                </p>
-            </div>
-        `;
-    });
-
-    if (hataVar) {
-        degerSonucDiv.innerHTML = "Lütfen tüm giriş alanlarını doğru bir şekilde doldurunuz (Ülke seçimi ve Harcırah Sayısı > 0).";
-        degerSonucDiv.className = 'sonuc-kutusu error';
-        return;
-    }
-
-    const toplamTLStr = toplamTL.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    let nihaiHTML = `
-        <h3>DETAYLI HARCIRAH HESAPLAMASI</h3>
-        ${detayHTML}
-        
-        <div class="genel-toplam">
-            <p style="margin: 0; font-weight: normal; font-size: 0.7em;">TOPLAM ALINACAK HARCIRAH</p>
-            <strong style="margin: 5px 0 0 0;">${toplamTLStr} TL</strong>
-        </div>
-        
-        <p style="font-size: 0.8em; color: #999; margin-top: 20px; text-align: center;">
-            *Kur verisi canlı alınmaktadır, alınamaması durumunda yedek kur kullanılır.
-            *Bordroya yansıyan harcırah kuru ayın son günü MB'den alınmaktadır.
-        </p>
-    `;
-    
-    degerSonucDiv.innerHTML = nihaiHTML;
-    degerSonucDiv.classList.remove('error');
-    degerSonucDiv.classList.remove('warning');
-}
-
 
 // --- 3.4. YOL ÜCRETİ HESAPLAYICISI MANTIĞI ---
 function hesaplaYolUcreti() {
