@@ -291,92 +291,77 @@ function hesaplaBoşGün() {
 
 
 // --- 3.2. HARCIRAH PLANLAYICISI MANTIĞI ---
-function planlaHaricrah() {
-    const motorKapamaZamaniInput = document.getElementById('motorKapamaZamani');
-    const haricrahSonucDiv = document.getElementById('haricrahSonuc');
 
-    if (!motorKapamaZamaniInput || !haricrahSonucDiv) return;
+    function planlaHaricrah() {
+        const motorKapamaZamaniInput = document.getElementById('motorKapamaZamani');
+        const haricrahSonucDiv = document.getElementById('haricrahSonuc');
 
-    const motorKapamaZamaniStr = motorKapamaZamaniInput.value.trim();
+        const motorKapamaZamaniStr = motorKapamaZamaniInput.value;
 
-    if (!motorKapamaZamaniStr) {
-        haricrahSonucDiv.innerHTML = "Lütfen Motor Kapama Zamanını (UTC) giriniz.";
-        haricrahSonucDiv.className = 'sonuc-kutusu error';
-        return;
-    }
-    
-    let motorKapamaDate;
-    try {
-        const [tarihKismi, saatKismi] = motorKapamaZamaniStr.split(' ');
-        const [gun, ay, yil] = tarihKismi.split('.');
-        const [saat, dakika] = saatKismi.split(':');
-        
-        const msTimestamp = Date.UTC(yil, ay - 1, gun, saat, dakika);
-        motorKapamaDate = new Date(msTimestamp);
-        
-        if (isNaN(motorKapamaDate.getTime())) {
-            throw new Error("Geçersiz Tarih Oluşumu.");
+        if (!motorKapamaZamaniStr) {
+            haricrahSonucDiv.innerHTML = "Lütfen Motor Kapama Zamanını (UTC) giriniz.";
+            haricrahSonucDiv.className = 'sonuc-kutusu error';
+            return;
         }
-    } catch (e) {
-        haricrahSonucDiv.innerHTML = "Hata: Tarih formatı okunamadı. Lütfen **GG.AA.YYYY SS:DD** formatını kontrol edin.";
-        haricrahSonucDiv.className = 'sonuc-kutusu error';
-        return;
-    }
-    
-    // Motor Kapamadan 30 dakika sonrası başlangıç alınır
-    let baslangicSuresiMs = motorKapamaDate.getTime() + (30 * 60 * 1000); 
+        
+        const motorKapamaDate = new Date(motorKapamaZamaniStr);
+        const year = motorKapamaDate.getFullYear();
+        const month = motorKapamaDate.getMonth();
+        const day = motorKapamaDate.getDate();
+        const hours = motorKapamaDate.getHours();
+        const minutes = motorKapamaDate.getMinutes();
+        
+        let baslangicSuresiMs = Date.UTC(year, month, day, hours, minutes) + (30 * 60 * 1000); // Motor Kapama + 30 Dk
 
-    let tabloHTML = `
-        <h2>Minimum Harcırah Hak Ediş Saatleri</h2>
-        <table style="width:100%; border-collapse: collapse; text-align: center; margin-top: 10px;">
-            <tr>
-                <th style="border-bottom: 2px solid #004d99; padding: 8px;">Harcırah</th>
-                <th style="border-bottom: 2px solid #004d99; padding: 8px;">Pushback Eşiği (UTC)</th>
-            </tr>
-    `;
-
-    for (let N = 1; N <= 5; N++) {
-        let pushbackMs;
-        let zamanAciklamasi;
-
-        if (N === 1) {
-            const yirmiDortSaatMs = 24 * 60 * 60 * 1000;
-            const birSaatMs = 1 * 60 * 60 * 1000;
-            pushbackMs = baslangicSuresiMs + yirmiDortSaatMs + birSaatMs;
-            zamanAciklamasi = "ve öncesi";
-
-        } else {
-            const gunMs = (N - 1) * 24 * 60 * 60 * 1000;
-            const birDakikaMs = 1 * 60 * 1000;
-            const birSaatMs = 1 * 60 * 60 * 1000;
-            const minBitisSuresiMs = baslangicSuresiMs + gunMs + birDakikaMs;
-            pushbackMs = minBitisSuresiMs + birSaatMs;
-            zamanAciklamasi = "ve sonrası";
-        }
-
-        const pushbackDate = new Date(pushbackMs);
-
-        const tarihSecenekleri = { 
-            year: 'numeric', month: 'short', day: 'numeric', 
-            hour: '2-digit', minute: '2-digit', 
-            hourCycle: 'h23', timeZone: 'UTC' 
-        };
-        const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri);
-
-        tabloHTML += `
-            <tr>
-                <td style="border-bottom: 1px solid #ddd; padding: 8px;">${N} Harcırah</td>
-                <td style="border-bottom: 1px solid #ddd; padding: 8px; font-weight: bold;">
-                    ${pushbackZamaniStr} UTC ${zamanAciklamasi}
-                </td>
-            </tr>
+        let tabloHTML = `
+            <h2>Minimum Harcırah Hak Ediş Saatleri</h2>
+            <table style="width:100%; border-collapse: collapse; text-align: center; margin-top: 10px;">
+                <tr>
+                    <th style="border-bottom: 2px solid #004d99; padding: 8px;">Harcırah</th>
+                    <th style="border-bottom: 2px solid #004d99; padding: 8px;">Pushback Eşiği (UTC)</th>
+                </tr>
         `;
+
+        for (let N = 1; N <= 5; N++) {
+            let pushbackMs;
+            let zamanAciklamasi;
+
+            if (N === 1) {
+                const yirmiDortSaatMs = 24 * 60 * 60 * 1000;
+                const bitisSuresiMs = baslangicSuresiMs + yirmiDortSaatMs;
+                pushbackMs = bitisSuresiMs + (1 * 60 * 60 * 1000);
+                zamanAciklamasi = "ve öncesi";
+
+            } else {
+                const gunMs = (N - 1) * 24 * 60 * 60 * 1000;
+                const birDakikaMs = 1 * 60 * 1000;
+                const minBitisSuresiMs = baslangicSuresiMs + gunMs + birDakikaMs;
+                pushbackMs = minBitisSuresiMs + (1 * 60 * 60 * 1000);
+                zamanAciklamasi = "ve sonrası";
+            }
+
+            const pushbackDate = new Date(pushbackMs);
+            const tarihSecenekleri = { 
+                year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit', 
+                hourCycle: 'h23', timeZone: 'UTC' 
+            };
+            const pushbackZamaniStr = pushbackDate.toLocaleString('tr-TR', tarihSecenekleri);
+
+            tabloHTML += `
+                <tr>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${N} Harcırah</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px; font-weight: bold;">
+                        ${pushbackZamaniStr} UTC ${zamanAciklamasi}
+                    </td>
+                </tr>
+            `;
+        }
+        
+        tabloHTML += `</table>`;
+        haricrahSonucDiv.innerHTML = tabloHTML;
+        haricrahSonucDiv.classList.remove('error');
     }
-    
-    tabloHTML += `</table>`;
-    haricrahSonucDiv.innerHTML = tabloHTML;
-    haricrahSonucDiv.classList.remove('error');
-}
 
 // --- 3.3. HARCIRAH DEĞER HESAPLAYICISI MANTIĞI ---
 function hesaplaHaricrahDeger() {
