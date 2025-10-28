@@ -198,7 +198,7 @@ async function yukleYolUcretiVerilerini() {
         const fiyatStr = benzinFiyati.toFixed(2).replace('.', ',');
         
         yolUcretiSonucDiv.innerHTML = `
-            Güncel Referans Benzin Fiyatı (API):
+            Güncel Benzin Fiyatı:
             <strong style="color: #004d99; font-size: 1.2em;">${fiyatStr} TL/Litre</strong>
             <span style="font-size: 0.8em; color: #666; display: block;">Güncelleme: ${suankiTarih}</span><br>
             Lütfen ikamet yakanızı ve kullanım sayısını giriniz.
