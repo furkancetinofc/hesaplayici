@@ -162,30 +162,28 @@ async function yukleYolUcretiVerilerini() {
         const data = await response.json(); 
 
         if (!data || data.status === false || !data.data) {
-             throw new Error("API'den geçerli veri alınamadı.");
+             throw new Error("Güncel veri alınamadı.");
         }
         
         const dataObj = data.data; 
         const firstKey = Object.keys(dataObj)[0]; 
         
         if (!firstKey) {
-             throw new Error("API'den benzin fiyat bilgisi içeren anahtar alınamadı.");
+             throw new Error("Güncel benzin fiyatı alınamadı");
         }
         
         const fiyatData = dataObj[firstKey]; 
         
-        // API'den gelen hedef anahtar
+        // API Hedef Anahtarı
         const hedefAnahtar = "Kursunsuz_95(Excellium95)_TL/lt";
         
-        // Fiyat dizesini al, yoksa yedek fiyatı kullan
         let fiyatString = fiyatData?.[hedefAnahtar] || YEDEK_BENZIN_FIYATI.toString();
         
-        // Fiyat dizesini temizle ve virgülü noktaya çevirip sayıya dönüştür
         fiyatString = fiyatString.trim(); 
         const benzinFiyati = parseFloat(fiyatString.replace(',', '.')); 
 
         if (isNaN(benzinFiyati) || benzinFiyati <= 0 || benzinFiyati === YEDEK_BENZIN_FIYATI) {
-             throw new Error(`API'den çekilen değer geçersizdi veya bulunamadı: ${fiyatString}`);
+             throw new Error(`Güncel değer çekilemedi ${fiyatString}`);
         }
 
         // Fiyatı kaydet ve sonucu güncelle
@@ -497,7 +495,7 @@ function hesaplaYolUcreti() {
 
     yolUcretiSonucDiv.innerHTML = `
         <h3>YOL ÜCRETİ HESAP SONUCU</h3>
-        <p>İkamet Yakanız: <strong>${ikametYeri === 'AVRUPA' ? 'AVRUPA (1.2 L/Yol)' : 'ANADOLU (2.2 L/Yol)'}</strong></p>
+        <p>İkamet Yakanız: <strong>${ikametYeri === 'AVRUPA' ? 'AVRUPA (3.25 L/Yol)' : 'ANADOLU (6.5 L/Yol)'}</strong></p>
         <p>Kullanım Sayısı (Tek Yön): <strong>${yolKullanimSayisi}</strong></p>
         <p>Güncel Benzin Fiyatı: <strong>${benzinFiyatiStr} TL/L</strong></p>
         <hr style="border-top: 1px solid #ccc; width: 60%; margin: 15px auto;">
