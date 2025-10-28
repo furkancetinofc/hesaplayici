@@ -378,6 +378,92 @@ function planlaHaricrah() {
     haricrahSonucDiv.classList.remove('error');
 }
 
+// --- 3.3. HARCIRAH DEĞER HESAPLAYICISI MANTIĞI ---
+function hesaplaHaricrahDeger() {
+    const degerSonucDiv = document.getElementById('degerSonuc');
+    if (!degerSonucDiv) return;
+
+    const girisSatirlari = document.querySelectorAll('.dinamik-giris-satiri');
+    let toplamTL = 0;
+    let detayHTML = '';
+    let hataVar = false;
+
+    girisSatirlari.forEach((satir) => {
+        const ulkeSelect = satir.querySelector('.ulke-secimi');
+        const sayiInput = satir.querySelector('.harcirah-sayisi');
+
+        const secilenUlke = ulkeSelect ? ulkeSelect.value : null;
+        const harcirahSayisi = sayiInput ? parseInt(sayiInput.value) : 0;
+
+        if (!secilenUlke || isNaN(harcirahSayisi) || harcirahSayisi < 1) {
+            hataVar = true;
+            return;  
+        }
+        
+        const veri = harcirahVerileri[secilenUlke];
+        const tekilDeger = veri.deger;
+        const paraBirimi = veri.birim;
+        const dovizAdi = veri.dovizAdi;
+        
+        let kur = kurVerileri[paraBirimi];  
+        if (!kur || kur === 0) {
+            kur = kurVerileri[`DEFAULT_${paraBirimi}`] || 1;
+        }
+        
+        const totalOriginalTutar = tekilDeger * harcirahSayisi;
+        const tlKarsiligi = totalOriginalTutar * kur;
+        toplamTL += tlKarsiligi;
+
+        const kurBilgisiStr = kur.toFixed(4).replace('.', ',');  
+        const tlKarsiligiStr = tlKarsiligi.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const tekilDegerStr = tekilDeger.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const totalOriginalTutarStr = totalOriginalTutar.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        detayHTML += `
+            <div class="detay-hesaplama-kutusu">
+                <h4>${secilenUlke} İçin ${harcirahSayisi} Harcırah Değeri</h4>
+                <p>Orijinal Tutar:  
+                    <strong>${totalOriginalTutarStr} ${dovizAdi}</strong>  
+                    <span style="font-size:0.8em; color:#666;">(${tekilDegerStr}${dovizAdi} x ${harcirahSayisi})</span>
+                </p>
+                <p>Güncel Kur (${paraBirimi}/TL):  
+                    1 ${paraBirimi} = <strong>${kurBilgisiStr} TL</strong>
+                </p>
+                <hr style="border-top: 1px solid #ddd; width: 70%; margin: 10px auto;">
+                <p class="toplam-tl">
+                    Toplam TL Karşılığı:  
+                    ${tlKarsiligiStr} TL
+                </p>
+            </div>
+        `;
+    });
+
+    if (hataVar) {
+        degerSonucDiv.innerHTML = "Lütfen tüm giriş alanlarını doğru bir şekilde doldurunuz.";
+        degerSonucDiv.className = 'sonuc-kutusu error';
+        return;
+    }
+
+    const toplamTLStr = toplamTL.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    let nihaiHTML = `
+        <h3>DETAYLI HARCIRAH HESAPLAMASI</h3>
+        ${detayHTML}
+        
+        <div class="genel-toplam">
+            <p style="margin: 0; font-weight: normal; font-size: 0.7em;">TOPLAM ALINACAK HARCIRAH</p>
+            <strong style="margin: 5px 0 0 0;">${toplamTLStr} TL</strong>
+        </div>
+        
+        <p style="font-size: 0.8em; color: #999; margin-top: 20px; text-align: center;">
+            *Kur verisi canlı alınmaktadır, alınamaması durumunda yedek kur kullanılır.
+        </p>
+    `;
+    
+    degerSonucDiv.innerHTML = nihaiHTML;
+    degerSonucDiv.classList.remove('error', 'warning');
+}
+
 // --- 3.4. YOL ÜCRETİ HESAPLAYICISI MANTIĞI ---
 function hesaplaYolUcreti() {
     const ikametYeriSelect = document.getElementById('ikametYeri');
