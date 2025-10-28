@@ -18,13 +18,13 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
     width: 600px;
     box-sizing: border-box;
-    padding: 0; /* İç padding, tab-content'e taşındı */
+    padding: 0; 
 }
 
 /* Başlıklar ve Açıklamalar */
 h1 {
     text-align: center;
-    color: #004d99; /* Mavi */
+    color: #004d99;
     margin-bottom: 10px;
     font-size: 1.8em;
 }
@@ -62,7 +62,7 @@ select {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 6px; /* Köşeleri Yuvarlama */
+    border-radius: 6px; 
     box-sizing: border-box;
     font-size: 16px;
     transition: border-color 0.3s;
@@ -73,14 +73,61 @@ input:focus, select:focus {
     outline: none;
 }
 
+/* Başlık Etiketleri Stili */
+.giris-basliklari {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px; 
+    padding-right: 50px;
+}
+
+.giris-basliklari label {
+    font-weight: 600;
+    color: #333;
+    flex-grow: 1; 
+    margin-bottom: 0; 
+    font-size: 0.9em;
+}
+
+/* Dinamik Giriş Alanları Stili */
+.dinamik-giris-satiri {
+    display: flex;
+    gap: 10px; 
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Ülke Seçim Kutusuna Genişlik Verilmesi */
+.dinamik-giris-satiri .select-wrapper {
+    flex-grow: 1;
+}
+
+.giris-basliklari label:not(.sayi-label) {
+    flex-grow: 1;
+}
+
+
+/* Sayı Kutusu ve Başlığı İçin Sabit Genişlik */
+.dinamik-giris-satiri .input-wrapper,
+.giris-basliklari .sayi-label {
+    flex-grow: 0;
+    width: 220px;
+    min-width: 220px; 
+}
+
+.dinamik-giris-satiri label {
+    display: none;
+}
+
+
 /* Butonlar */
 button {
     width: 100%;
     padding: 12px;
-    background-color: #ff9900; /* Turuncu */
+    background-color: #ff9900; 
     color: white;
     border: none;
-    border-radius: 6px; /* Köşeleri Yuvarlama */
+    border-radius: 6px; 
     cursor: pointer;
     font-size: 1.1em;
     font-weight: bold;
@@ -92,14 +139,45 @@ button:hover {
     background-color: #e68a00;
 }
 
-/* Harcırah Butonu için Mavi Ton */
-#planlaHaricrahBtn {
+/* Harcırah Butonları için Mavi Ton */
+#planlaHaricrahBtn, #hesaplaDegerBtn {
     background-color: #004d99;
 }
 
-#planlaHaricrahBtn:hover {
+#planlaHaricrahBtn:hover, #hesaplaDegerBtn:hover {
     background-color: #003a73;
 }
+
+/* Ekleme Butonu */
+.mavi-btn-kucuk {
+    width: auto !important;
+    padding: 8px 15px;
+    background-color: #008000;
+    font-size: 0.9em;
+    font-weight: normal;
+    float: right;
+}
+
+.mavi-btn-kucuk:hover {
+    background-color: #006600;
+}
+
+/* Silme Butonu */
+.sil-btn {
+    width: 40px !important;
+    padding: 10px 0;
+    background-color: #cc0000;
+    margin-top: 0;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.sil-btn:hover {
+    background-color: #990000;
+}
+
 
 /* Sonuç Kutusu */
 .sonuc-kutusu {
@@ -128,25 +206,48 @@ button:hover {
     text-align: center;
 }
 
-/* Tablo Stilleri (Harcırah Sonucu İçin) */
-.sonuc-kutusu table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    font-size: 1em; /* Harcırah tablosu yazı boyutunu küçült */
+/* Harcırah Değer Detay Sonuçları Stili */
+.detay-sonuc h3 {
+    color: #004d99;
+    margin-top: 0;
+    font-size: 1.4em;
+    border-bottom: 2px dashed #004d99;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
 }
 
-.sonuc-kutusu th, 
-.sonuc-kutusu td {
-    border-bottom: 1px solid #ddd;
-    padding: 10px;
+.detay-hesaplama-kutusu {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 2px dashed #004d99; 
+    border-radius: 8px;
+    background-color: #ffffff;
+    text-align: left;
+    font-size: 0.95em;
+}
+
+.genel-toplam {
+    margin-top: 30px;
+    padding: 15px;
+    background-color: #004d99;
+    color: white;
+    font-size: 1.8em;
+    border-radius: 8px;
     text-align: center;
 }
+.genel-toplam strong {
+    font-size: 1.5em;
+    color: #ff9900;
+}
+.detay-hesaplama-kutusu p {
+    margin: 5px 0;
+}
 
-.sonuc-kutusu th {
-    background-color: #e6f0ff;
-    color: #004d99;
-    border-bottom: 2px solid #004d99;
+.detay-hesaplama-kutusu .toplam-tl {
+    font-size: 1.7em;
+    color: #cc0000;
+    font-weight: bold;
+    margin-top: 10px;
 }
 
 /* Sekme Stilleri */
@@ -176,7 +277,7 @@ button:hover {
 }
 
 .tab-content {
-    padding: 30px; /* İçerik paddingi */
+    padding: 30px;
 }
 
 .hidden {
