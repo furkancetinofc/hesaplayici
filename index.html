@@ -11,11 +11,12 @@
         
         <div class="tab-buttons">
             <button id="tabCalismaBtn" class="active">Boş Gün Hesaplayıcı</button>
-            <button id="tabHaricrahBtn">Harcırah Planlayıcı</button>
+            <button id="tabHaricrahBtn">Harcırah Hesaplayıcı</button>
+            <button id="tabDegerBtn">Harcırah Değeri Hesaplayıcı</button>
         </div>
 
         <div id="calismaGunTab" class="tab-content">
-            <h1>Boş Gün Hesaplayıcı</h1>
+            <h1>Uçucu Ekip Boş Gün Hesaplayıcı</h1>
             <p class="description">Ay seçiminize ve rapor/mazeret izinlerinize göre hak ettiğiniz "Kullanılabilecek Boş Gün" sayısını hesaplar.</p>
 
             <div class="input-group">
@@ -52,20 +53,42 @@
         </div>
 
         <div id="haricrahTab" class="tab-content hidden">
-            <h1>Harcırah Hesaplayıcı</h1>
-            <p class="description">Motor kapama saatinize göre, hangi saatte Pushback yapma durumunda kaç harcırah alacağınızı hesaplayın (UTC).</p>
+            <h1>Harcırah Planlayıcı</h1>
+            <p class="description">Motor kapama saatinize göre, hangi saatte Pushback yapmanız durumunda kaç harcırah alacağınızı hesaplar. (UTC giriniz)</p>
 
             <div class="input-group">
                 <label for="motorKapamaZamani">Motor Kapama Zamanı (UTC Tarih ve Saat):</label>
                 <input type="datetime-local" id="motorKapamaZamani" required>
             </div>
             
-            <button id="planlaHaricrahBtn">Harcırah Hesabını Göster</button>
+            <button id="planlaHaricrahBtn">Harcırah Sayısını Göster</button>
 
             <div id="haricrahSonuc" class="sonuc-kutusu" style="text-align: left;">
                 Lütfen Motor Kapama Zamanını giriniz.
             </div>
         </div>
+        
+        <div id="degerHesaplayiciTab" class="tab-content hidden">
+            <h1>Harcırah Değeri Hesaplayıcı</h1>
+            <p class="description">Gidilen ülkeye ve harcırah sayısına göre hak edişinizin güncel TL karşılığını hesaplar. Birden fazla uçuş ekleyebilirsiniz.</p>
+
+            <div class="giris-basliklari">
+                <label>Gidilen Ülke</label>
+                <label class="sayi-label">Harcırah Sayısı</label>
+            </div>
+
+            <div id="harcirahGirisleri">
+                </div>
+            
+            <button id="ekleBtn" class="mavi-btn-kucuk" style="margin-top: 5px;">+ Yeni Uçuş Ekle</button>
+            
+            <button id="hesaplaDegerBtn" class="mavi-btn">Toplam TL Karşılığını Hesapla</button>
+
+            <div id="degerSonuc" class="sonuc-kutusu detay-sonuc" style="text-align: left;">
+                Lütfen ülke seçiniz, harcırah sayısını giriniz ve hesaplama yapınız.
+            </div>
+        </div>
+
 
     </div>
 
